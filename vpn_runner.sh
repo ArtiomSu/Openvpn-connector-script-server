@@ -5,7 +5,7 @@ aggressive_checker=5 # seconds to chech if vpn is up
 wait_for_vpn_to_become_active=20 # seconds	#used to be 30 so might revert
 
 # get path to call helper properly
-SCRIPTPATH="/root/vpn"
+SCRIPTPATH="/home/human/scrips/vpn/s/Openvpn-connector-script-server"
 
 vpn_change_trigger="/tmp/vpn_change.vpnsh"
 vpn_ready_notify="/tmp/vpn_ready.vpnsh"
@@ -23,8 +23,8 @@ testpass() {
 launchvpn() {
 	testpass
 	#config="$(ls /root/vpn/configs/*UK*.ovpn |sort -R |tail -n 1)" # for uk only
-	config="$(ls /root/vpn/configs/*.ovpn |sort -R |tail -n 1)"
-	echo "using config $config"
+	config="$(ls $SCRIPTPATH/configs/*.ovpn |sort -R |tail -n 1)"
+	echo "using config ${config##*/}"
 	$SCRIPTPATH/vpn-helper.sh $PASSWORD $config
 }
 
@@ -53,7 +53,14 @@ testIP() {
 	ip=$(curl -s ifconfig.me)
 	echo "My ip is $ip"
 
-	checkisp=$(whois $ip | grep -i IPVanish)
+	getIp="$(grep verify-x509-name $config | cut -d " " -f 2)"
+	echo "vpn host is is $getIp"
+	getIp="$(dig +short $getIp)"
+	echo "vpn host ip is $getIp"
+	getIp="${getIp%.*}"
+	echo "ip should start with $getIp"
+
+	checkisp="$(echo $ip | grep $getIp)"
 	if [ ! -z "$checkisp" ]; then
 	# it is from ipvanish 	
 	echo "ip is from ipvanish"
@@ -125,11 +132,11 @@ checkstart(){
 		  exit 2
 	else
 	echo 1 > $vpn_ready_notify	
-	chmod 755 $vpn_ready_notify	
-	chown nas:users $vpn_ready_notify	
+	chmod 666 $vpn_ready_notify	
+	#chown human:users $vpn_ready_notify	
 	echo 1 > $vpn_change_trigger
-	chmod 755 $vpn_change_trigger
-	chown nas:users $vpn_change_trigger
+	chmod 666 $vpn_change_trigger
+	#chown human:users $vpn_change_trigger
 	return 0	  
 	fi
 }
@@ -146,6 +153,8 @@ exit_cleanly(){
 
 main(){
 	PASSWORD=$@
+	killall openvpn
+	launchvpn
 	checkstart && loop
 }
 
