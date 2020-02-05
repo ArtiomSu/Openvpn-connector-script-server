@@ -122,7 +122,7 @@ loop(){
 			echo "everything is ok @ $(date)"	
 		fi
 		echo "___________________________________"
-		echo "using config $config"
+		echo "using config ${config##*/}"
 		sleep $aggressive_checker
 	done
 }
