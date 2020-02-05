@@ -5,7 +5,9 @@ aggressive_checker=5 # seconds to chech if vpn is up
 wait_for_vpn_to_become_active=20 # seconds	#used to be 30 so might revert
 
 # get path to call helper properly
-SCRIPTPATH="/home/human/scrips/vpn/s/Openvpn-connector-script-server"
+#SCRIPTPATH="/home/human/scrips/vpn/s/Openvpn-connector-script-server"
+SCRIPTPATH="/root/vpn"
+
 
 vpn_change_trigger="/tmp/vpn_change.vpnsh"
 vpn_ready_notify="/tmp/vpn_ready.vpnsh"
@@ -112,7 +114,7 @@ loop(){
 			then
 				echo 1 > $vpn_ready_notify	
 				echo -e "killing and restarting vpn\n"
-				killall openvpn
+				kill_vpn
 				sleep 1
 				launchvpn
 				sleep $wait_for_vpn_to_become_active
@@ -141,19 +143,28 @@ checkstart(){
 	fi
 }
 
+kill_vpn(){
+while [[ $(ps -A | grep openvpn)  ]]; do
+        echo -en "openvpn alive killing\r"
+        killall -9 openvpn > /dev/null 2>&1
+        sleep 1
+done
+echo -en "openvpn killed\r"	
+}
+
 exit_cleanly(){
 	unset PASSWORD
 	echo "Exiting VPN.... OpenVPN will be killed"
 	echo 1 > $vpn_ready_notify	
 	echo 1 > $vpn_change_trigger
-	killall openvpn
+	kill_vpn
 	echo "Goodbye"
 	exit 0
 }
 
 main(){
 	PASSWORD=$@
-	killall openvpn
+	kill_vpn
 	launchvpn
 	checkstart && loop
 }
