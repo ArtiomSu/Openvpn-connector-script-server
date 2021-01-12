@@ -107,6 +107,7 @@ curl https://www.bbc.com/news/england/london
 ```
 Now obviously that example script is useless since you can go on those websites regardless, but you get the idea.
 
+If you want you can take a look at how all the values behave by watching all of them `watch -n 1 "echo change;cat /tmp/vpn_change.vpnsh;echo ready;cat /tmp/vpn_ready.vpnsh;echo config; cat /tmp/vpn_config.vpnsh"`
 
 Personnaly I use it mostly to check if the vpn is up since randomly changing ip addresses suits my needs, however I decided to include the feature of changing to a specific country/city/server so that it is a more of a full experience and didnt take too long to do so anyway.
 
