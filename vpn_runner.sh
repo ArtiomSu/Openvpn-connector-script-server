@@ -6,8 +6,9 @@ wait_for_vpn_to_become_active=20 # seconds	#used to be 30 so might revert
 # get path to call helper properly
 SCRIPT="$(realpath $0)"
 SCRIPTPATH="$(dirname $SCRIPT)"
-
+USE_NETWORK_MANAGER_FIX=0	# set to 1 to turn off, 0 to turn on 
 vpn_change_trigger="/tmp/vpn_change.vpnsh"
+vpn_freeze_trigger="/tmp/vpn_freeze.vpnsh"
 vpn_ready_notify="/tmp/vpn_ready.vpnsh"
 vpn_config="/tmp/vpn_config.vpnsh"
 config=""
@@ -36,6 +37,10 @@ getconfig(){
 }
 
 launchvpn() {
+	if [ USE_NETWORK_MANAGER_FIX ]; then
+		systemctl restart NetworkManager
+		sleep 5
+	fi
 	testpass
 	getconfig
 	$SCRIPTPATH/vpn-helper.sh "$PASSWORD" "$config"
@@ -86,7 +91,22 @@ test_change(){
 	fi
 }
 
+test_freeze(){
+	if [ "$(cat $vpn_freeze_trigger)" == "0" ]; then
+		kill_vpn	
+		echo 1 > $vpn_ready_notify
+		return 1
+	else
+		return 0 
+	fi
+}
+
 testUP(){
+	test_freeze
+	if [ $? -ne 0 ]; then
+		echo "freezing vpn"
+		return 0
+	fi
 	#check to see if we need to reset vpn
 	test_change
 	if [ $? -ne 0 ]; then
@@ -138,6 +158,8 @@ checkstart(){
 		chmod 666 $vpn_change_trigger
 		touch $vpn_config
 		chmod 666 $vpn_config
+		touch $vpn_freeze_trigger
+		chmod 666 $vpn_freeze_trigger
 		return 0
 	fi
 }

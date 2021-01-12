@@ -34,11 +34,12 @@ dig 	(comes in dnsutils package)
 By default it will randomly select vpn servers I will go through this in next section.
 
 ### Interacting with other scripts
-You will notice at the top of `vpn_runner.sh` there are 3 files this script reads and writes to:
+You will notice at the top of `vpn_runner.sh` there are 4 files this script reads and writes to:
 ```
 vpn_change_trigger="/tmp/vpn_change.vpnsh"
 vpn_ready_notify="/tmp/vpn_ready.vpnsh"
 vpn_config="/tmp/vpn_config.vpnsh"
+vpn_freeze_trigger="/tmp/vpn_freeze.vpnsh"
 ```
 
 I set these as temporary files but you can put these inside your home directory if you want
@@ -46,6 +47,9 @@ I set these as temporary files but you can put these inside your home directory 
 
 ##### `vpn_ready_notify` 
 Tells you if the vpn is up. 0=up, 1=down. This file should not be modified by your scripts as it will confuse other scripts using it. The file is updated everytime the script checks if the network is up and if the ip is correct.
+
+##### `vpn_freeze_trigger`
+Allows you to pause the vpn and use your real IP. Simply `echo 0 > /tmp/vpn_freeze.vpnsh` to pause the vpn and `echo 1` to start it up again.
 
 
 ##### `vpn_config` 
@@ -92,10 +96,10 @@ echo "US-New-York" > $vpn_config
 echo "0" > $vpn_change_trigger
 wait_for_vpn	# this will sleep until the vpn becomes active
 
-#now you can access American private stuff or something lol
+#now you can access American private stuff or something
 curl https://www.nytimes.com 	
 
-# ok lets get something from england lol
+# ok lets get something from england
 echo "UK" > $vpn_config
 echo "0" > $vpn_change_trigger
 wait_for_vpn
