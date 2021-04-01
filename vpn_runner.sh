@@ -61,8 +61,8 @@ testnetwork() {
 }
 
 testIP() {
-	#ip=$(curl -s ifconfig.me)
-	ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
+	ip=$(curl -s ifconfig.co)
+	#ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 	echo "My ip is $ip"
 	getIp="$(grep verify-x509-name $config | cut -d " " -f 2)"
 	echo "vpn host is is $getIp"
